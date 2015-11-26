@@ -13,8 +13,8 @@ import math as mt
 #from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.structure import TanhLayer
-#from pybrain.datasets import SupervisedDataSet
-#import pylab as plt
+#from pybrain.datasets import dfSupervisedDataSet
+import pylab as plt
 
 # General things and parameters
 
@@ -60,7 +60,7 @@ def ranking(Population, dataSet, net):
         return item[0]
     return sorted(error, key=getKey)
 
-def ranking1(Population, dataSet, net):
+def rankingAtan(Population, dataSet, net):
     # A value to get the minimal
     minimal = 100
     # Getting the error, here, the mean squared error of each individual, remember the dataset
@@ -82,7 +82,7 @@ def ranking1(Population, dataSet, net):
         return item[0]
     return sorted(error, key=getKey)
 
-def ranking2(Population, dataSet, net):
+def rankingSMSE(Population, dataSet, net):
     # A value to get the minimal
     minimal = 100
     # Getting the error, here, the mean squared error of each individual, remember the dataset
@@ -110,7 +110,7 @@ def ranking2(Population, dataSet, net):
 To do this part, my idea is to define how much (%) of the past population is going to have offspring, it receives also the percent of the population is going to mutate too. I'm thinking about setting the number of offspring per parent to be random. It should be remembered that some not fitted should have offspring too in order to keep the genetic diversity
 """
 # Crossover, mutation, breeding
-def breed(Population,RANK, mutate, crossover, mu, sigma):
+def breedND(Population,RANK, mutate, crossover, mu, sigma):
     # Setting the number opopulation to reproduce
     numM = int (crossover * len(Population))
     Population = Population.tolist()
@@ -126,13 +126,21 @@ def breed(Population,RANK, mutate, crossover, mu, sigma):
         mate2 = rd.choice(Population)
         #print"mate2", mate2
         # generating the child
-        children.insert(i, mate2)
+        children.insert(i, rd.choice([mate1, mate2]))
         for a in xrange(0, rd.randint(1, (len(mate1) - 1))):
-            children[i][a] = mate1[a]
-    # Killing the unfit and putting the children on
-    for g in xrange(0, len(children)):
-        Population[RANK[len(Population) - len(children) + g][1]] = children[g]
-    #print"New pop no mutation", Population
+            if children[i] == mate1:
+                children[i][a] = mate2[a]
+            else:
+                children[i][a] = mate1[a]
+    #reordening
+    PopMid = []
+    for h in xrange(0, len(RANK)):
+        PopMid.append(Population[RANK[h][1]])
+
+    for dl in range(((len(RANK)- len(children))), len(RANK)):
+        PopMid.pop(len(PopMid)-1)
+    Population = PopMid + children
+    #print "POpulaton size", len(Population)
     # Mutating
     muNum = int(mutate * len(Population))
     #print muNum
@@ -144,7 +152,7 @@ def breed(Population,RANK, mutate, crossover, mu, sigma):
     #print"New pop", Population
     return np.array(Population)
 
-def breed1(Population,RANK, mutate, crossover, mu, sigma, DyingRAte):
+def breed(Population,RANK, mutate, crossover, mu, sigma, DyingRAte):
     # Setting the number opopulation to reproduce
     numM = int (crossover * len(Population))
     Population = Population.tolist()
@@ -168,17 +176,17 @@ def breed1(Population,RANK, mutate, crossover, mu, sigma, DyingRAte):
     for h in xrange(0, len(RANK)):
         PopMid.append(Population[RANK[h][1]])
     
-    for dl in range((len(RANK)- int(DyingRAte*len(RANK)) -1), len(RANK)):
+    for dl in range((len(RANK)- int(DyingRAte*len(RANK))), len(RANK)):
         PopMid.pop(len(PopMid)-1)
         #print'killed', dl, "rank", len(RANK)
     #print Population, "\n\n"
     Population = PopMid + children
-    print "POpulaton size", len(Population)
     #print"New pop no mutation", Population
     # Mutating
     muNum = int(mutate * len(Population))
     #print muNum
     for fi in xrange(0, muNum):
+        #protecting the past best fit from mutating
         varl = Population.index(rd.choice(Population))
         varl1 = rd.randint(0, len(Population[varl])-1)
         Population[varl][varl1] = rd.gauss(mu, sigma)
@@ -187,53 +195,43 @@ def breed1(Population,RANK, mutate, crossover, mu, sigma, DyingRAte):
     return np.array(Population)
 
 
-# CHANGE:PREVENT POPULATION FROM BECOMING 0
-
 #print'\n\n\n'
 # For testing purposes
 l1 = 0
 l2 = 1
-DyingRAte = 0.5
-mut = 0.3
+mut = 0.2
 cross = 0.5
-totGen = 300
-POpSize =1000
+DyingRAte = cross
+totGen = 1000
+POpSize =500
+x1 =[]
+y1= []
+
+def NeuralGen(net, totGen, cross, mut, POpSize, test):
+    if test ==True:
+        Population1 =  np.array([[0.1]*len(net.params)]*POpSize)
+    else:
+        Population1 = pop(net.params, POpSize, l1, l2)
+    r1 = ranking(Population1, dataSet, net)
+    print"Initial error:", r1[0][0]
+    for runi in xrange(0, totGen):
+        Population1 = breed(Population1, r1, mut, cross, l1, l2, DyingRAte)
+        #Population = breedND(Population, r1, mut, cross, l1, l2)
+        r1 = ranking(Population1, dataSet, net)
+        print runi, r1[0][0]
+        x1.append(runi)
+        y1.append(r1[0][0])
+        print "Populaton size:", len(Population1)
+    print"Final error:", r1[0][1]
+    return Population1[r1[0][1]]
+NeuralGen(net, totGen, cross, mut, POpSize, False)
 
 
-# create the original  population and evaluate
-Population = pop(net.params, POpSize, l1, l2)
-#Population = Pop1
-r1 = ranking(Population, dataSet, net)
-print r1[0], "\n\n"
-
-for runi in xrange(0, totGen):
-    Population = breed1(Population, r1, mut, cross, l1, l2, DyingRAte)
-    r1 = ranking(Population, dataSet, net)
-    print runi, r1[0]
-
-    net._setParameters(Population[r1[0][1]])
-    print '1 XOR 1: Esperado = 0, Calculado =', net.activate([1, 1])[0]
-    print '1 XOR 0: Esperado = 1, Calculado =', net.activate([1, 0])[0]
-    print '0 XOR 1: Esperado = 1, Calculado =', net.activate([0, 1])[0]
-    print '0 XOR 0: Esperado = 0, Calculado =', net.activate([0, 0])[0]
+print '1 XOR 1: Esperado = 0, Calculado =', net.activate([1, 1])[0]
+print '1 XOR 0: Esperado = 1, Calculado =', net.activate([1, 0])[0]
+print '0 XOR 1: Esperado = 1, Calculado =', net.activate([0, 1])[0]
+print '0 XOR 0: Esperado = 0, Calculado =', net.activate([0, 0])[0]
 #print r1[0][0]
+plt.plot(x1, y1)
+plt.show()
 #"""
-
-
-#Unused pieces of code
-"""
-    # Looking randomically for the minimal
-    if error[i] < minimal:
-    minimal = error[i]
-    pos = i
-    #print minimal
-    print'minimal error:', minimal, pos
-    net._setParameters(Population[pos])
-    plt.plot(x1, error)
-    plt.show()
-    # Showing results
-    print'\n\n Parameters:\n', net.params
-    #print'Error:', np.array(error)
-"""
-
-
