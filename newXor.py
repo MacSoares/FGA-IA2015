@@ -1,7 +1,8 @@
-from pybrain.supervised.trainers import BackpropTrainer
+from pybrain.supervised import BackpropTrainer
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.structure import TanhLayer
 from pybrain.datasets import SupervisedDataSet
+
 # from pybrain.structure import SigmoidLayer
 
 # Criacao da rede
@@ -26,7 +27,7 @@ epocas = 1000
 # inicializando contador de epocas
 epocasPercorridas = 0
 
-print "\n\nPesos iniciais: ", net.params
+print("\n\nPesos iniciais: ", net.params)
 
 # Treinamento com parado por erro ou por epocas
 while epocas > 0:
@@ -38,12 +39,12 @@ while epocas > 0:
         break
 
 # Apresentacao dos resultados baseados na tabela da porta logica XOR
-print "\n\nPesos finais: ", net.params
-print "\nErro final: ", error
+print("\n\nPesos finais: ", net.params)
+print("\nErro final: ", error)
 
-print "\n\nTotal de epocas percorridas: ", epocasPercorridas
+print("\n\nTotal de epocas percorridas: ", epocasPercorridas)
 
-print '\n\n1 XOR 1: Esperado = 0, Calculado = ', net.activate([1, 1])[0]
-print '1 XOR 0: Esperado = 1, Calculado =', net.activate([1, 0])[0]
-print '0 XOR 1: Esperado = 1, Calculado =', net.activate([0, 1])[0]
-print '0 XOR 0: Esperado = 0, Calculado =', net.activate([0, 0])[0]
+print("\n\n1 XOR 1: Esperado = 0, Calculado = ", net.activate([1, 1])[0])
+print("1 XOR 0: Esperado = 1, Calculado =", net.activate([1, 0])[0])
+print("0 XOR 1: Esperado = 1, Calculado =", net.activate([0, 1])[0])
+print("0 XOR 0: Esperado = 0, Calculado =", net.activate([0, 0])[0])

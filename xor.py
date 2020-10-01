@@ -42,7 +42,7 @@ trainer = BackpropTrainer(network, ds, learningrate=0.1, momentum=0.9, verbose=T
 
 # print network
 
-print "\nPesos iniciais: ", network.params
+print ("\nPesos iniciais: ", network.params)
 
 max_error = 1
 error, epocas = 5, 1000
@@ -63,14 +63,14 @@ while epocas > 0:
 
 # print "\n\nRNA treinada ate a convergencia!"
 
-print "\n\nPesos finais: ", network.params
-print "\nErro final: ", error
+print ("\n\nPesos finais: ", network.params)
+print ("\nErro final: ", error)
 
-print "\n\nTotal de epocas percorridas: ", epocasPercorridas
+print ("\n\nTotal de epocas percorridas: ", epocasPercorridas)
 
 # Test data
 
-print '\n\n1 XOR 1: Esperado = 0, Calculado = ', network.activate([1, 1])[0]
-print '1 XOR 0: Esperado = 1, Calculado =', network.activate([1, 0])[0]
-print '0 XOR 1: Esperado = 1, Calculado =', network.activate([0, 1])[0]
-print '0 XOR 0: Esperado = 0, Calculado =', network.activate([0, 0])[0]
+print ('\n\n1 XOR 1: Esperado = 0, Calculado = ', network.activate([1, 1])[0])
+print ('1 XOR 0: Esperado = 1, Calculado =', network.activate([1, 0])[0])
+print ('0 XOR 1: Esperado = 1, Calculado =', network.activate([0, 1])[0])
+print ('0 XOR 0: Esperado = 0, Calculado =', network.activate([0, 0])[0])
